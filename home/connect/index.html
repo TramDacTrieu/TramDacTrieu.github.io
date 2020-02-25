@@ -25,7 +25,7 @@ FROM (SELECT userCd, MAX(serialNumber) AS max_serial
 FROM tb_data_location 
 GROUP BY userCd) AS max
 JOIN tb_data_location AS first ON max.userCd = first.userCd and max.max_serial = first.serialNumber";
- 
+ $result = mysqli_query($con, $sql)
 // Confirm there are results
 if ($result = mysqli_query($con, $sql))
 {

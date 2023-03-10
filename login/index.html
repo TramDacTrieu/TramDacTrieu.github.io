@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Firebase JavaScript SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Your Firebase configuration details -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBECKfjMFJ5Kml9FF1F2PVXGi8O1nsYAhs",
+            authDomain: "webdashboard-eecea.firebaseapp.com",
+            projectId: "webdashboard-eecea",
+            storageBucket: "webdashboard-eecea.appspot.com",
+            messagingSenderId: "347419719757",
+            appId: "1:347419719757:web:689dcd1c7cfb97bdeb8404",
+            measurementId: "G-B8CY71NLQE",
+            databaseURL: "webdashboard-eecea-default-rtdb.firebaseio.com"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+    </script>
+    <!-- CSS styles for the login form -->
+    <style>
+        .container {
+            margin-top: 50px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .btn-primary {
+            width: 100%;
+        }
+
+        .hide-content {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="hide-content">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username">username address:</label>
+                        <input type="username" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(window).bind('setup', function () {
+            // Check if user is already logged in
+            var cookies = document.cookie.split('; ');
+            var isLoggedIn = false;
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].split('=');
+                if (cookie[0] === 'username') {
+                    isLoggedIn = true;
+                    break;
+                }
+            }
+            if (isLoggedIn) {
+                window.location.assign('/dashboard');
+            }
+        });
+        $(document).ready(function () {
+            $(window).trigger('setup');
+            $('body').removeClass('hide-content');
+            $("#loginForm").submit(function (event) {
+                event.preventDefault();
+                var username = $("#username").val();
+                var password = $("#password").val();
+                if (username != '' && password != '') {
+                    var usersRef = firebase.database().ref("users");
+                    usersRef.child(username).once("value")
+                        .then(function (snapshot) {
+                            if (snapshot.exists()) {
+                                var user = snapshot.val();
+                                if (user.pwd === password) {
+                                    // Store user data in a cookie
+                                    var expirationDate = new Date();
+                                    expirationDate.setDate(expirationDate.getDate() + 7); // expires in 7 days
+                                    document.cookie = "username=" + username + "; expires=" + expirationDate.toUTCString() + '; path=/';
+                                    document.cookie = "role=" + user.role + "; expires=" + expirationDate.toUTCString() + '; path=/';
+                                    // Redirect the user to the home page
+                                    window.location.assign('/dashboard');
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Oops...',
+                                        text: 'Incorrect password.',
+                                    });
+                                }
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: 'User does not exist.',
+                                });
+                            }
+                        })
+                        .catch(function (error) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: error.message + '.',
+                            });
+                        });
+                } else {
+                    alert("Please enter username and password.");
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

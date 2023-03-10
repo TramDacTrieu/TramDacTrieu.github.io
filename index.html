@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home</title>
+</head>
+
+<body>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    $(window).bind('setup', function () {
+      // Check if user is already logged in
+      var cookies = document.cookie.split('; ');
+      var isLoggedIn = false;
+      for (var i = 0; i < cookies.length; i++) {
+        var cookie = cookies[i].split('=');
+        if (cookie[0] === 'username') {
+          isLoggedIn = true;
+          break;
+        }
+      }
+      if (isLoggedIn) {
+        window.location.assign('/dashboard');
+      } else {
+        window.location.assign('/login');
+      }
+    });
+
+    $(document).ready(function () {
+      $(window).trigger('setup');
+    });
+
+  </script>
+</body>
+
+</html>
+
+</html>

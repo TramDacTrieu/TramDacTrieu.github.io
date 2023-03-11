@@ -7,31 +7,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Page</title>
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
     <!-- jQuery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="../js/jquery.min.js"></script>
     <!-- Bootstrap JS -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
     <!-- Firebase JavaScript SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/firebaseDefaultConfig.js"></script>
     <!-- Your Firebase configuration details -->
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBECKfjMFJ5Kml9FF1F2PVXGi8O1nsYAhs",
-            authDomain: "webdashboard-eecea.firebaseapp.com",
-            projectId: "webdashboard-eecea",
-            storageBucket: "webdashboard-eecea.appspot.com",
-            messagingSenderId: "347419719757",
-            appId: "1:347419719757:web:689dcd1c7cfb97bdeb8404",
-            measurementId: "G-B8CY71NLQE",
-            databaseURL: "webdashboard-eecea-default-rtdb.firebaseio.com"
-        };
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-    </script>
     <!-- CSS styles for the login form -->
     <style>
         .container {
@@ -58,8 +45,8 @@
             <div class="col-md-6 col-lg-4">
                 <form id="loginForm">
                     <div class="form-group">
-                        <label for="username">username address:</label>
-                        <input type="username" class="form-control" id="username" name="username" required>
+                        <label for="username">Username:</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
                     </div>
                     <div class="form-group">
                         <label for="password">Password:</label>
@@ -94,7 +81,7 @@
                 var username = $("#username").val();
                 var password = $("#password").val();
                 if (username != '' && password != '') {
-                    var usersRef = firebase.database().ref("users");
+                    var usersRef = defaultDb.ref("users");
                     usersRef.child(username).once("value")
                         .then(function (snapshot) {
                             if (snapshot.exists()) {

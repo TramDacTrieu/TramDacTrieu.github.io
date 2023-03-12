@@ -1,0 +1,281 @@
+<link rel="stylesheet" href="../dashboard/nav.css">
+<!-- Bootstrap CSS -->
+<link rel="stylesheet" href="../css/bootstrap.min.css">
+<!-- jQuery -->
+<script src="../js/jquery.min.js"></script>
+<!-- Bootstrap JS -->
+<script src="../js/bootstrap.min.js"></script>
+<!-- Firebase JavaScript SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-database.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="../js/firebaseDefaultConfig.js" defer></script>
+<script src="../js/nav.js" defer></script>
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+<div id="navBar"></div>
+<div class="page-content p-5" id="content">
+  <!-- Toggle button -->
+  <button id="sidebarCollapse" type="button" class="btn btn-light bg-white rounded-pill shadow-sm px-4 mb-4"><i
+      class="fa fa-bars mr-2"></i><small class="text-uppercase font-weight-bold">Toggle</small></button>
+  <div class="row">
+    <div class="col-md-6">
+      <span class="text-white" style="font-size: medium;">Số tiền quảng cáo hằng ngày: <input id="inputMoney"
+          value="2" /></span>
+    </div>
+    <div class="col-md-6">
+      <span class="text-white" style="font-size: medium;">Tỉ lệ lời mong muốn: <input id="inputRatio"
+          value="1.2" /></span>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6">
+      <span class="text-white" style="font-size: medium;">Nhập số ngày = <input id="inputDay" value="20" /></span>
+    </div>
+  </div>
+
+  <span class="text-white" style="font-size: medium;">Nhập retention hằng ngày: </span>
+  <div class="row">
+    <div class="col-md-3">
+      <input id="inputRetention0" value="1" />
+    </div>
+    <div class="col-md-3">
+      <input id="inputRetention1" value="0.169" />
+    </div>
+    <div class="col-md-3">
+      <input id="inputRetention2" value="0.1" />
+    </div>
+    <div class="col-md-3">
+      <input id="inputRetention3" value="0.098" />
+    </div>
+  </div>
+
+
+
+  <div class="row">
+    <div class="col-md-3">
+      <input id="inputRetention4" value="0.092" />
+    </div>
+    <div class="col-md-3">
+      <input id="inputRetention5" value="0.063" />
+    </div>
+    <div class="col-md-3">
+      <input id="inputRetention6" value="0.062" />
+    </div>
+    <div class="col-md-3">
+      <input id="inputRetention7" value="0.044" />
+    </div>
+  </div>
+  <br>
+  <div class="row">
+    <div class="col-md-2">
+      <button id="calculate" class="btn btn-primary" onclick=calculate()>Tính toán</button>
+    </div>
+  </div>
+
+  <div class="separator"></div>
+
+  <div class="bg-white p-5 rounded shadow-sm">
+    <canvas id="myChart" style="width:100%;max-width:700px"></canvas>
+    <canvas id="finalChart" style="width:100%;max-width:700px;"></canvas>
+  </div>
+  <div class="separator"></div>
+  <div class="bg-white p-5 rounded shadow-sm">
+    <div id="ketqua" style="font-family: Arial; line-height: 1.5em; "></div>
+  </div>
+</div>
+
+<script>
+  const versionName = "2_3";
+  function calculate() {
+    let day = Number(document.getElementById("inputDay").value);
+
+    var xValues = [];
+    for (let i = 0; i < day; i++) {
+      xValues.push("day " + i);
+    }
+    var barColors = ["red", "green", "blue", "orange", "brown"];
+    var yValues = [];
+
+    for (let i = 0; i <= 7; i++) {
+      yValues.push(document.getElementById("inputRetention" + i).value);
+      console.log(yValues[i]);
+    }
+
+    new Chart("myChart", {
+      type: "bar",
+      data: {
+        labels: xValues,
+        datasets: [{
+          label: 'Retention',
+          backgroundColor: barColors,
+          data: yValues
+        }]
+      },
+      options: {}
+    });
+
+
+    const div2 = document.getElementById("ketqua");
+    let result = "";
+    let sum = 0;
+
+    var yValues = [];
+
+    for (let i = 0; i <= 7; i++) {
+      yValues.push(document.getElementById("inputRetention" + i).value);
+      console.log(yValues[i]);
+    }
+
+
+    for (let i = 0; i < yValues.length; i++) {
+      sum += Number(yValues[i]);
+      console.log("sum = " + sum);
+    }
+
+    result += "Giá trị tổng retention = " + sum.toFixed(2) + "<br>";
+
+    let revenues = [];
+    let moneySpend = document.getElementById("inputMoney").value;
+    let ratio = document.getElementById("inputRatio").value;
+    let moneyTake = moneySpend * ratio;
+
+    result += "Tiền quảng cáo hằng ngày = " + moneySpend + "<br>";
+    result += "Tiền nhận về mong muốn = " + moneyTake + "<br>";
+
+    for (let i = 0; i < yValues.length; i++) {
+      revenues.push(moneyTake / sum * yValues[i]);
+      result += "Doanh thu ngày " + i + " = " + revenues[i].toFixed(2) + "<br>";
+    }
+
+    result += "<br>Mô hình hóa: <br>";
+
+    let realRevenues = [];
+    let totalWinLose = [];
+    let totalRevenues = [];
+    let totalRevenue = 0;
+    let winLose = 0;
+
+
+    for (let i = 0; i < day; i++) {
+      realRevenues.push(0);
+      for (let j = 0; j < day; j++) {
+        if (j <= i && j < revenues.length) {
+          // result += "Ngày " + i + ", doanh thu = " + revenues[j] + "<br>";
+          realRevenues[i] += revenues[j];
+        }
+      }
+      // sum += yValues[i];
+    }
+
+    result += "<br>Doanh thu hiện trên dashboard: <br>";
+
+    for (let i = 0; i < day; i++) {
+      totalRevenue += realRevenues[i];
+      totalRevenues.push(totalRevenue);
+      winLose = totalRevenue - moneySpend * (i + 1);
+      totalWinLose.push(winLose);
+      result += "Ngày " + i + ", doanh thu = " + realRevenues[i].toFixed(2) + ", tổng doanh thu = " + totalRevenue.toFixed(2) + ", win lose = " + winLose.toFixed(2) + "<br>";
+      // sum += yValues[i];
+    }
+
+    div2.innerHTML = result;
+
+    new Chart("finalChart", {
+      type: "bar",
+      data: {
+        labels: xValues,
+        datasets: [
+          {
+            label: 'Doanh thu ngày',
+            data: realRevenues,
+            backgroundColor: 'red'
+          },
+          {
+            label: 'Lợi nhuận',
+            data: totalWinLose,
+            backgroundColor: 'orange'
+          }]
+      },
+      options: {}
+    });
+  }
+
+  function drawChart() {
+    // var xValues = ["Italy", "France", "Spain", "USA", "Argentina"];
+    // var yValues = [55, 49, 44, 24, 15];
+    // var barColors = ["red", "green", "blue", "orange", "brown"];
+
+    var xValues = [];
+    var yValues = [];
+    var retentionValues = [];
+    var barColors = "blue";
+
+    for (let i = 0; i <= 7; i++) {
+      xValues.push("retention " + i);
+      retentionValues.push(0);
+    }
+
+    let retentionDay0 = 0;
+    let retentionDay1 = 0;
+    let totalPlayTime = 0;
+    let totalSessionCount = 0;
+    let userCount = 0;
+
+    for (const property in allData) {
+      var user = allData[property];
+      let isRealUser = user['installerName'] == 'com.android.vending';
+      if (isRealUser == false) continue;
+      userCount++;
+      let retention_type = user['retentionType'];
+      let today = 738550.4475819197
+      let timeSinceFirstPlay = Math.round(today - user["startPlayDay"]);
+
+      let bool0 = timeSinceFirstPlay > 0 && retention_type >= 0;
+      let bool1 = timeSinceFirstPlay > 1 && retention_type >= 1;
+
+      if (bool0) retentionDay0 += 1;
+      if (bool1) retentionDay1 += 1;
+
+      let info = property + " timeSinceFirstPlay = " + timeSinceFirstPlay + ", retention 0 = " + bool0;
+      if (bool1) info += ", retention 1 = " + bool1;
+      console.log(info);
+
+      let playTime = user["totalPlayTime"];
+      totalPlayTime += playTime;
+
+      let sessionCount = user["sessionCount"];
+      totalSessionCount += sessionCount;
+      // retentionDay0 += 1;
+      // retentionDay1 += 1;
+    }
+
+    retentionValues[0] = retentionDay0;
+    retentionValues[1] = retentionDay1;
+    console.log(retentionValues);
+
+    const div1 = document.getElementById("retentionDay1");
+    div1.innerText = (retentionDay1 / retentionDay0 * 100).toFixed(2) + "%";
+
+    const div2 = document.getElementById("avgPlayTime");
+    div2.innerText = (totalPlayTime / userCount / 60).toFixed(2) + " phút";
+
+    const div3 = document.getElementById("avgSession");
+    div3.innerText = (totalSessionCount / userCount).toFixed(2) + " lần";
+
+    new Chart("myChart", {
+      type: "bar",
+      data: {
+        labels: xValues,
+        datasets: [{
+          backgroundColor: barColors,
+          data: retentionValues
+        }]
+      },
+      options: {}
+    });
+  }
+</script>

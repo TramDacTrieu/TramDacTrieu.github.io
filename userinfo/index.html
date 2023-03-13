@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đổi mật khẩu</title>
+    <link rel="stylesheet" href="../dashboard/nav.css">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    <!-- jQuery -->
+    <script src="../js/jquery.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- Firebase JavaScript SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/firebaseDefaultConfig.js" defer></script>
+    <script src="../js/nav.js" defer></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<body>
+    <div id="navBar"></div>
+    <div class="page-content p-5" id="content">
+        <!-- Toggle button -->
+        <button id="sidebarCollapse" type="button" class="btn btn-light bg-white rounded-pill shadow-sm px-4 mb-4"><i
+                class="fa fa-bars mr-2"></i><small class="text-uppercase font-weight-bold">Toggle</small></button>
+        <h2 class="display-4 text-white">Thông tin cá nhân</h2>
+        <div class="separator"></div>
+        <div class="row text-white">
+            <div class="col">
+                <div class="bg-white p-5 rounded shadow-sm">
+                    <p style="color: black; word-break: break-word;" id="dataUser"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+<script>
+        $(function () {
+            let userRef = defaultDb.ref('users/' + document.cookie.split('; ')[0].split('=')[1]);
+            userRef.get().then((snapshot) => {
+                //console.log(snapshot.val());
+                $('#dataUser').text(JSON.stringify(snapshot.val()));
+            });
+        });
+</script>
+
+</html>

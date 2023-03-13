@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đổi mật khẩu</title>
+    <link rel="stylesheet" href="../dashboard/nav.css">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    <!-- jQuery -->
+    <script src="../js/jquery.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- Firebase JavaScript SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/firebaseDefaultConfig.js" defer></script>
+    <script src="../js/nav.js" defer></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<body>
+    <div id="navBar"></div>
+    <div class="page-content p-5" id="content">
+        <!-- Toggle button -->
+        <button id="sidebarCollapse" type="button" class="btn btn-light bg-white rounded-pill shadow-sm px-4 mb-4"><i
+                class="fa fa-bars mr-2"></i><small class="text-uppercase font-weight-bold">Toggle</small></button>
+
+
+
+        <div class="mb-3 row">
+            <label for="oldPass" class="col-sm-2 col-form-label text-white">Nhập mật khẩu hiện tại: </label>
+            <div class="col-sm-4">
+                <input type="password" maxlength="20" class="form-control" id="oldPass" required>
+            </div>
+        </div>
+        <div class="mb-3 row">
+            <label for="newPass" class="col-sm-2 col-form-label text-white">Nhập mật khẩu mới: </label>
+            <div class="col-sm-4">
+                <input type="password" maxlength="20" class="form-control" id="newPass" required>
+            </div>
+        </div>
+
+        <div class="mb-3 row">
+            <label for="confirmPass" class="col-sm-2 col-form-label text-white">Nhập lại mật khẩu mới: </label>
+            <div class="col-sm-4">
+                <input type="password" maxlength="20" class="form-control" id="confirmPass" required>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-2">
+                <button id="changePass" class="btn btn-primary">Đổi mật khẩu</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+<script>
+    $(function () {
+        $("#changePass").click(function () {
+            let oldPass = $('#oldPass');
+            let newPass = $('#newPass');
+            let confirmPass = $('#confirmPass');
+
+            if (oldPass.val() === '' || newPass.val() === '' || confirmPass.val() === '') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Vui lòng điền đủ thông tin',
+                });
+            }
+
+            if (newPass.val() !== confirmPass.val()) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Mật khẩu mới không trùng nhau',
+                });
+            } else {
+                let userRef = defaultDb.ref('users/' + document.cookie.split('; ')[0].split('=')[1]);
+                userRef.get().then((snapshot) => {
+                    if (oldPass.val() !== snapshot.val()['pwd']) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Mật khẩu hiện tại bạn nhập không đúng',
+                        });
+                    } else {
+                        userRef.update({
+                            pwd: newPass.val()
+                        }).then(() => {
+                            Swal.fire({
+                                position: 'top-end',
+                                icon: 'success',
+                                title: 'Cập nhật mật khẩu thành công, vui lòng đăng nhập lại',
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                            document.cookie.split(";").forEach(function (c) { document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); });
+                            window.location.assign('/login');
+                        }).catch((error) => {
+                            Swal.fire({
+                                position: 'top-end',
+                                icon: 'error',
+                                title: 'Cập nhật mật khẩu thất bại vui lòng thử lại',
+                                showConfirmButton: false,
+                                timer: 2000
+                            });
+                            console.error('Error updating password:', error);
+                        });
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+</html>

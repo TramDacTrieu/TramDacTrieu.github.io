@@ -1,4 +1,5 @@
 $(function () {
+   
     // Get reference to the div element
     const myDiv = document.getElementById('navBar');
 
@@ -8,6 +9,7 @@ $(function () {
         .then(html => {
             // Set the content of the div element
             myDiv.innerHTML = html;
+            $('#lblUsername').text(document.cookie.split('; ')[0].split('=')[1]);
         })
         .catch(error => {
             console.error(error);
@@ -24,4 +26,10 @@ function retentionTool() {
 
 function home() {
     window.location.assign('/dashboard');
+}
+function changePass() {
+    window.location.assign('/changepass');
+}
+function userinfo() {
+    window.location.assign('/userinfo');
 }

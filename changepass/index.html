@@ -72,9 +72,7 @@
                     title: 'Oops...',
                     text: 'Vui lòng điền đủ thông tin',
                 });
-            }
-
-            if (newPass.val() !== confirmPass.val()) {
+            } else if (newPass.val() !== confirmPass.val()) {
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',

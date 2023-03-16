@@ -1,4 +1,5 @@
 <link rel="stylesheet" href="nav.css">
+<link rel="stylesheet" href="../css/chip.css?3">
 <!-- Bootstrap CSS -->
 <link rel="stylesheet" href="../css/bootstrap.min.css">
 <!-- jQuery -->
@@ -12,17 +13,43 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="../js/firebaseDefaultConfig.js" defer></script>
 <script src="../js/nav.js" defer></script>
+<script src="../js/chip.js?2" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 <div id="navBar"></div>
 
 <div class="page-content p-5" id="content">
+
+    <div class="loading style-2" id="loaderOverlay" hidden><div class="loading-wheel"></div></div>
+
+
+
     <!-- Toggle button -->
     <button id="sidebarCollapse" type="button" class="btn btn-light bg-white rounded-pill shadow-sm px-4 mb-4"><i
             class="fa fa-bars mr-2"></i><small class="text-uppercase font-weight-bold">Toggle</small></button>
 
     <h2 class="display-4 text-white">All project</h2>
-    <div class="row">
+
+
+
+    <fieldset>
+        <legend>
+            <span class="text-white" style="font-size: large;">Project</span>
+        </legend>
+        <div class="chip-group" tabindex="-1" role="radiogroup" id="projectChip">
+        </div>
+    </fieldset>
+    <fieldset>
+        <legend>
+            <span class="text-white" style="font-size: large;">Version</span>
+        </legend>
+        <div class="chip-group" tabindex="-1" role="radiogroup" id="versionChip">
+        </div>
+    </fieldset>
+
+
+
+    <!-- <div class="row">
         <div class="col-md-1">
             <span class="text-white" style="font-size: large;">Project</span>
         </div>
@@ -40,7 +67,7 @@
             <select id="versionTab" class="form-select" style="width: fit-content;">
             </select>
         </div>
-    </div>
+    </div> -->
 
     <div class="separator"></div>
 
@@ -91,71 +118,6 @@
         }).catch((error) => {
             console.error(error);
         });
-        console.log(3);
-
-
-
-
-        $('#projectTab').on('change', function () {
-            $('#dataUser').text('');
-            if (this.value === '') return;
-            // get data 1
-            const db = firebase.app(this.value).database();
-            db.goOnline();
-            let versionOption = document.getElementById('versionTab');
-            $('#versionTab').find('option').remove().end();
-            let opt = document.createElement('option');
-            opt.value = '';
-            opt.innerHTML = '';
-            versionOption.appendChild(opt);
-            let ref = db.ref().orderByKey();
-            ref.once('value', (snapshot) => {
-                const versions = Object.keys(snapshot.val());
-                versions.forEach(function (item, index) {
-                    var opt = document.createElement('option');
-                    opt.value = item;
-                    opt.innerHTML = item;
-                    versionOption.appendChild(opt);
-                });
-            });
-            // db.ref().get().then((snapshot) => {
-            //     snapshot.forEach((childSnapshot) => {
-            //         var keystr = childSnapshot.key;
-            //         //var value = childSnapshot.val();
-            //         var opt = document.createElement('option');
-            //         opt.value = keystr;
-            //         opt.innerHTML = keystr;
-            //         versionOption.appendChild(opt);
-            //     })
-            // })
-
-        });
-
-        $('#versionTab').on('change', function () {
-            allData = [];
-            if (this.value === '') {
-                $('#dataUser').text('');
-                return;
-            }
-            // get data 1
-            let project = $('#projectTab').find(":selected").val();
-            const db = firebase.app(project).database();
-            db.goOnline();
-
-
-            db.ref().child(this.value).child("userdata").get().then((snapshot) => {
-                if (snapshot.exists()) {
-                    $('#dataUser').text(JSON.stringify(snapshot.val()));
-                    console.log(snapshot.val());
-                    allData = snapshot.val();
-                    drawChart();
-                } else {
-                    console.log("Current have 0 record.");
-                }
-            }).catch((error) => {
-                console.error(error);
-            });
-        });
     });
 
     async function getData() {
@@ -163,11 +125,6 @@
         defaultDb.goOnline();
         const snapshot = await databaseConfig.get();
         let firstKey;
-        let select = document.getElementById('projectTab');
-        let opt = document.createElement('option');
-        opt.value = '';
-        opt.innerHTML = '';
-        select.appendChild(opt);
         snapshot.forEach((childSnapshot) => {
             if (!firstKey) {
                 firstKey = childSnapshot.key;
@@ -176,15 +133,60 @@
             var value = childSnapshot.val();
             projectConfig[keystr] = value;
             firebase.initializeApp(value, keystr);
-            console.log('initializeApp: ' + keystr);
-            var opt = document.createElement('option');
-            opt.value = keystr;
-            opt.innerHTML = keystr;
-            select.appendChild(opt);
             defaultProject = keystr;
-        });
 
+            let htmlPattern = `<div class="chip chip-checkbox" aria-labelledby="${keystr}" tabindex="0" role="radio"
+                aria-checked="false" onclick="updateVersion('${keystr}')">
+                <input type="radio" id="${keystr}" name="project" value="${keystr}"/>
+                <span>${keystr}</span>
+            </div>`;
+            $('#projectChip').append(htmlPattern);
+
+
+        });
         return firstKey;
+    }
+
+    function updateVersion(project) {
+        $('#loaderOverlay').show();
+        //alert(project);
+        $('#dataUser').text('');
+        $('#versionChip').children().remove()
+        const db = firebase.app(project).database();
+        db.goOnline();
+        let ref = db.ref().orderByKey();
+        ref.once('value', (snapshot) => {
+            const versions = Object.keys(snapshot.val());
+            versions.forEach(function (item, index) {
+                let htmlPattern = `<div class="chip chip-checkbox" aria-labelledby="${item}" tabindex="0" role="radio"
+                aria-checked="false" onclick="getDataByVersion('${item}')">
+                <input type="radio" id="${item}" name="version" value="${item}"/>
+                <span>${item}</span>
+            </div>`;
+                $('#versionChip').append(htmlPattern);
+                $('#loaderOverlay').hide();
+            });
+        });
+    }
+
+    function getDataByVersion(version) {
+        allData = [];
+        // get data 1
+        let project = $('input[name=project]:checked').val();
+        const db = firebase.app(project).database();
+        db.goOnline();
+
+        db.ref().child(version).child("userdata").get().then((snapshot) => {
+            if (snapshot.exists()) {
+                $('#dataUser').text(JSON.stringify(snapshot.val()));
+                allData = snapshot.val();
+                drawChart();
+            } else {
+                console.log("Current have 0 record.");
+            }
+        }).catch((error) => {
+            console.error(error);
+        });
     }
 
 
